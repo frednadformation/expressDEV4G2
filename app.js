@@ -10,7 +10,7 @@ require('dotenv').config();
 
 //Ce qui permet d'envoyer et de recuperer des données
 var cors = require('cors');
-app.use(cors({credentials: true, origin: 'http://localhost:3000'}));
+app.use(cors({credentials: true, origin: process.env.FRONTEND_URL}));
 
 
 var mongoose = require('mongoose');
@@ -67,7 +67,7 @@ app.post('/submit-form-data', function(req, res) {
     Data.save()
     .then(() =>{
         console.log("Data saved !");
-        res.redirect("http://localhost:3000/");
+        res.redirect(process.env.FRONTEND_URL);
     })
     .catch(err => console.log(err));
 });
@@ -95,7 +95,7 @@ app.put('/edit/:id', function(req, res){
     .then(data =>{
         console.log("Donnée mise à jour :");
         console.log(data);
-        res.redirect('http://localhost:3000/allcontacts/');
+        res.redirect(process.env.FRONTEND_URL +'/allcontacts/');
     })
     .catch(err =>{console.log(err);})
 });
@@ -105,7 +105,7 @@ app.delete('/delete/:id', function(req, res) {
     Contact.findOneAndDelete({_id:req.params.id})
     .then(() =>{
         console.log("Donnée supprimée.");
-        res.redirect('http://localhost:3000/allcontacts/');
+        res.redirect(process.env.FRONTEND_URL +'/allcontacts/');
     })
     .catch(err =>{console.log(err);});
 });
@@ -197,7 +197,7 @@ app.post('/api/inscription', function(req, res) {
     Data.save()
     .then(()=>{
         console.log("User saved");
-        res.redirect('http://localhost:3000/connexion/');
+        res.redirect(process.env.FRONTEND_URL+'/connexion/');
     })
     .catch((err) => {console.log(err);});
 });
@@ -239,7 +239,7 @@ app.post('/api/connexion', function(req, res) {
 //Deconnexion
 app.get('/logout', (req, res) => {
     res.clearCookie("accessToken");
-    res.redirect('http://localhost:3000/');
+    res.redirect(process.env.FRONTEND_URL);
 });
 
 //Get JWT : mettre a disposition le JWT  a mon client
