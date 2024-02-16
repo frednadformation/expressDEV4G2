@@ -101,6 +101,60 @@ const nocache = require('nocache');
 
 app.use(nocache());
 
+//Multer : gestion des medias
+
+const multer = require('multer');
+
+app.use(express.static('uploads'));
+
+const storage = multer.diskStorage({
+    destination: (req, file, cb) =>{
+        cb(null, 'uploads/');
+    },
+    filename: (req, file, cb) =>{
+        cb(null, file.originalname);
+    }
+})
+
+const upload = multer({storage});
+
+app.post('/upload', upload.single('image'), function(req, res){
+    if(!req.file){
+        res.status(400).json("No file uploaded!");
+    }
+    else{
+        res.json("File uploaded!");
+    }
+})
+
+app.post('/uploadfiles', upload.array('images', 5), function(req, res){
+    if(!req.files || req.files.length === 0){
+        res.status(400).json("No file uploaded!");
+    }
+    else{
+        res.json("File uploaded!");
+    }
+})
+
+
+//Documentation
+// const swaggerJsDoc = require('swagger-jsdoc');
+const swaggerUI = require('swagger-ui-express');
+
+// const swaggerOptions = {
+//     swaggerDefinition : {
+//         info : {
+//             title : "Documentation du backend",
+//             version : "1.0",
+//         }
+//     },
+//     apis: ["app.js"]
+// }
+const swaggerDocs = require("./swagger-output.json")
+console.log(swaggerDocs);
+
+app.use('/api-docs/', swaggerUI.serve, swaggerUI.setup(swaggerDocs))
+
 //models
 //Partie Contact
 var Contact = require('./models/Contact');
@@ -176,6 +230,15 @@ app.delete('/delete/:id', function(req, res) {
 
 var Post = require('./models/Post');
 //Read (Lire toutes les posts)
+/**
+ * @swagger
+ * /allposts:
+ *          get:
+ *              description: get all posts
+ *              responses:
+ *                      200:
+ *                        description: Success
+ */
 app.get('/allposts', function(req, res) {
     Post.find().then(data =>{
         console.log(data);
