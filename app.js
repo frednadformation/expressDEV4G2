@@ -38,6 +38,68 @@ const {createTokens, validateToken} = require('./JWT');
 
 const { jwtDecode } = require('jwt-decode');
 
+//Partie Sécurité
+
+const toobusy = require('toobusy-js');//Attaque Deni de service
+
+app.use(function(req, res, next) {
+    if(toobusy()){
+        res.status(503).send("Server too busy");
+    }
+    else{
+        next();
+    }
+});
+
+const session = require('express-session');
+const svgcaptcha = require('svg-captcha');
+
+app.use(
+    session({
+        secret : "my-secret-key",
+        resave: false,
+        saveUninitialized : true
+    })
+)
+
+app.get('/captcha', (req, res) =>{
+    const options = {
+        size: 5
+    }
+    const captcha = svgcaptcha.create(options);
+
+    req.session.captcha = captcha.text;
+
+    res.type('svg');
+    res.status(200).send(captcha.data);
+
+})
+
+app.post('/verify', (req, res) =>{
+    const {userInput} = req.body.captcha;
+
+    if(userInput === req.session.captcha){
+        res.status(200).send("Captcha is valid");
+    }
+    else{
+        res.status(400).send("Captcha is invalid");
+    }
+})
+
+//Injection parametre http
+const hpp = require('hpp');
+
+app.use(hpp());
+
+//entete sécurisée
+const helmet = require("helmet");
+
+app.use(helmet());
+
+//Cache control
+const nocache = require('nocache');
+
+app.use(nocache());
 
 //models
 //Partie Contact
