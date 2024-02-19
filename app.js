@@ -119,6 +119,7 @@ const storage = multer.diskStorage({
 const upload = multer({storage});
 
 app.post('/upload', upload.single('image'), function(req, res){
+    console.log(req.file);
     if(!req.file){
         res.status(400).json("No file uploaded!");
     }
@@ -261,18 +262,25 @@ app.get('/post/:id', function(req, res) {
 });
 
 //Create (Créer un post)
-app.post('/nouveaupost', function(req, res) {
+app.post('/nouveaupost', upload.single('image'), function(req, res) {
     const Data = new Post({
         titre : req.body.titre,
         auteur : req.body.auteur,
-        description : req.body.description
+        description : req.body.description,
+        imageName : req.file.filename
     })
-    Data.save()
-    .then(() =>{
-        console.log("Post saved");
-        res.redirect('/allposts')
-    })
-    .catch(err => {console.log(err);})
+
+    if(!req.file){
+        res.status(400).json("No file uploaded!");
+    }
+    else{
+        Data.save()
+        .then(() =>{
+            console.log("Post saved");
+            res.json("File uploaded and post saved !");
+        })
+        .catch(err => {console.log(err);})
+    }
 });
 
 //Update (Mise à jour d'un post)
